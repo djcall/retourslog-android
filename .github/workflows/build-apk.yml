@@ -2,11 +2,6 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'main.py'
-      - 'buildozer.spec'
-      - '.github/workflows/build-apk.yml'
 
 jobs:
   build:
@@ -15,12 +10,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with kivy/buildozer (Docker)
-        run: |
-          docker run --rm -v "$PWD":/home/user/app -w /home/user/app kivy/buildozer buildozer android debug
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          workdir: .
+          buildozer_version: stable
+          command: buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: RetourSlog-android-debug-apk
-          path: bin/*.apk
+          path: ${{ steps.buildozer.outputs.filename }}
